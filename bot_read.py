@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import praw
 
-reddit = praw.Reddit('bot1')
+reddit = praw.Reddit('fitness-bot')
 
 #use r/pythonforengineers if just fucking around (or posting)
 subreddit = reddit.subreddit("fitness")
