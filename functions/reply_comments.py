@@ -2,10 +2,19 @@ import praw
 import pdb
 import re
 import os
-from praw.models import MoreComments
+from praw.models import MoreComments as mc
+import requests
+from bs4 import BeautifulSoup as bs
+
 
 # create reddit instance
 reddit = praw.Reddit('fitness-bot')
+
+# url access
+url = 'https://www.bodybuilding.com/exercises/' # url of website to gather data
+page = requests.get(url) # getting the url
+soup = bs(page.content , 'html.parser') # parsing page content
+urlStart = "www.bodybuilding.com" # begining of address for use in comment replies
 
 # keywords to reply to
 keys = ['neck', 'traps', 'trapezius', 'shoulders', 'shoulder', 'deltoids', 'delts', 'chest', 'pecs', 'pectorialis', 'arms', 'biceps', 'bicep', 'bis', 
@@ -24,6 +33,24 @@ else: # reading reply history to create a list of all comments replied to
         comment_reply_history = comment_reply_history.split("\n") # split at each new line
         comment_reply_history = list(filter(None, comment_reply_history)) # if an empty element sneaks in, it is deleted
 
+excerciseContainer = soup.findAll("section", {"class", "exercise-list-container"}) # traverse to where the excercises are listed and linked
+list = excerciseContainer[0].findAll("a") # find all the links in the sections which correspond to each address
+links = [x["href"] for x in list] # stores links in an array
+
+#used to find all the names of the links
+def is_the_only_string_within_a_tag(s):
+    """Return True if this string is the only child of its parent tag."""
+    return (s == s.parent.string)
+exercises = excerciseContainer[0].findAll(string=is_the_only_string_within_a_tag)
+
+#create a dictionary of keys that are excercises and values that are links
+excerciseDictionary = dict(zip(exercises,links))
+
+# used for printing the dictionary
+# for excercise in excerciseDictionary:
+#     print(excercise + " : " + urlStart+ excerciseDictionary[excercise] )
+#     print("\n")
+
 # choosing sub to post to
 subreddit = reddit.subreddit('pythonforengineers')
 
@@ -40,7 +67,7 @@ for submission in subreddit.new(limit=1):
             # will run for any commenmt not previously responded to
             if comment.id not in comment_reply_history:
 
-                 comment_reply_history.append(comment.id) # adds comment to the reply history
+                comment_reply_history.append(comment.id) # adds comment to the reply history
 
                 # check for keywords to respond to
                 if any(key in comment.body for key in keys):
