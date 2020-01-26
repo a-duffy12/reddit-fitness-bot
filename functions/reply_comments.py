@@ -7,6 +7,9 @@ from praw.models import MoreComments
 # create reddit instance
 reddit = praw.Reddit('fitness-bot')
 
+# keywords to reply to
+keys = ['known', 'scammer', 'ignore']
+
 # case if the comment reply history file does not exist
 if not os.path.isfile("comment_reply_history.txt"):
     comment_reply_history = []
@@ -22,18 +25,21 @@ else: # reading reply history to create a list of all comments replied to
 subreddit = reddit.subreddit('pythonforengineers')
 
 # check for submissions
-for submission in subreddit.new(limit=5):
+for submission in subreddit.new(limit=1):
 
     # iterate through all comments in the post using a BFS
     submission.comments.replace_more(limit=None)
     for comment in submission.comments.list():
 
+        # will run for any commenmt not previously read
         if comment.id not in comment_reply_history:
-            # printing the comments
-            print(comment.body)
 
-            #comment.reply("it is known") # replies with a comment
-            #print("Fitness-BOT replying to ", submission.title) # prints out what post it replied to
+            # check for keywords to respond to
+            if any(key in comment.body for key in keys):
+
+                comment.reply("i have been summoned") # replies with a comment
+                print("Fitness-BOT replying to ", comment.author) # prints out what post it replied to
+            
             comment_reply_history.append(comment.id) # adds comment to the reply history
 
 # write to comment reply history with the updated list of ids
