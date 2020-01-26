@@ -8,7 +8,10 @@ from praw.models import MoreComments
 reddit = praw.Reddit('fitness-bot')
 
 # keywords to reply to
-keys = ['known', 'scammer', 'ignore']
+keys = ['neck', 'traps', 'trapezius', 'shoulders', 'shoulder', 'deltoids', 'delts', 'chest', 'pecs', 'pectorialis', 'arms', 'biceps', 'bicep', 'bis', 
+'triceps', 'tris', 'tricep', 'forearms', 'forearm', 'brachioradialis', 'abs', 'ab', 'rectus abdominis', 'legs', 'quads', 'quadriceps', 'quad', 
+'quadricep', 'hamstrings', 'calves', 'calf', 'gastrocnemius', 'soleus', 'lats', 'lat', 'latissimus', 'middle back', 'rhomboids', 'lower back', 
+'low back', 'back']
 
 # case if the comment reply history file does not exist
 if not os.path.isfile("comment_reply_history.txt"):
@@ -31,17 +34,20 @@ for submission in subreddit.new(limit=1):
     submission.comments.replace_more(limit=None)
     for comment in submission.comments.list():
 
-        # will run for any commenmt not previously read
-        if comment.id not in comment_reply_history:
+        # checks to see if the bot was summoned
+        if ("!exerciseFinder" in comment.body):
+        
+            # will run for any commenmt not previously responded to
+            if comment.id not in comment_reply_history:
 
-            # check for keywords to respond to
-            if any(key in comment.body for key in keys):
+                 comment_reply_history.append(comment.id) # adds comment to the reply history
 
-                comment.reply("i have been summoned") # replies with a comment
-                print("Fitness-BOT replying to ", comment.author) # prints out what post it replied to
-            
-            comment_reply_history.append(comment.id) # adds comment to the reply history
+                # check for keywords to respond to
+                if any(key in comment.body for key in keys):
 
+                    comment.reply("i have been summoned") # replies with a comment
+                    print("Fitness-BOT replying to ", comment.author) # prints out what post it replied to
+                
 # write to comment reply history with the updated list of ids
 with open("comment_reply_history.txt", "w") as f: # open file as writeable
     for comment_id in comment_reply_history: # for all the ids in the list
